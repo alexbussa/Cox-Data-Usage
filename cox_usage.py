@@ -7,13 +7,13 @@ login_url = "https://www.cox.com/resaccount/sign-in.cox"
 stats_url = "https://www.cox.com/internet/mydatausage.cox"
 cox_user  = "username"
 cox_pass  = "password"
+json_file = "/config/json/cox_usage.json"
 
 #Setup browser
 browser = mechanicalsoup.StatefulBrowser(
     soup_config={'features': 'lxml'},
     user_agent='Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.13) Gecko/20101206 Ubuntu/10.10 (maverick) Firefox/3.6.13',
 )
-browser.set_verbose(2)
 
 #Request Cox login page. the result is a requests.Response object
 login_page = browser.get(login_url)
@@ -34,7 +34,6 @@ browser.submit(login_form, login_page.url)
 stats_page = browser.get(stats_url)
 
 #Grab the script with the stats in it
-#stats = stats_page.soup.findAll('script')[7].string
 stats = stats_page.soup.findAll('script', string=re.compile('utag_data'))[0].string
 
 #Split and RSplit on the first { and on the last } which is where the data object is located
@@ -43,9 +42,6 @@ jsonValue = '{%s}' % (stats.split('{', 1)[1].rsplit('}', 1)[0],)
 #Load into json
 data = json.loads(jsonValue)
 
-#Print JSON
-#print(json.dumps(value, indent=4, sort_keys=True))
-
 #Print JSON to file
-with open('cox_usage.json', 'w+') as outfile:  
-    json.dump(data, outfile, indent=4, sort_keys=True)
+with open(json_file, 'w+') as outfile:  
+    json.dump(data, outfile, sort_keys=True)
